@@ -1,5 +1,5 @@
 // sw.js
-const VERSION = 'baras-v8'; // ← キャッシュ更新時に上げる
+const VERSION = 'baras-v11'; // ← キャッシュ更新時に上げる
 
 // このSWがインストールされたスコープ（末尾は必ず `/`）
 const BASE = new URL('./', self.registration.scope).pathname;
