@@ -5,22 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>バラシュナ暗記法</title>
 
-  <!-- PWA -->
-<!-- head 内 -->
-<link rel="manifest" href="./manifest.webmanifest">
+<link rel="manifest" href="./manifest.webmanifest?v=8">
 <meta name="theme-color" content="#1f1335">
 
-<!-- iOS（A2HS対策） -->
+<!-- iOS（ホーム画面追加のアイコン&名前） -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="./icons/icon-192.png">
 <meta name="apple-mobile-web-app-title" content="バラシュナ暗記">
 <link rel="apple-touch-icon" href="./icons/icon-180.png" sizes="180x180">
-<meta name="mobile-web-app-capable" content="yes">
-<div class="sr" role="status" aria-live="polite" id="live"></div>
- 
 
-<!-- あなたのCSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -50,37 +44,36 @@
     </main>
   </div>
 
-  <!-- 背景の神域エフェクト（不要なら削除OK） -->
+  <!-- 背景エフェクト -->
   <div class="baras-bg" aria-hidden="true">
     <div class="aura"></div>
     <div class="grain"></div>
   </div>
 
-  <!-- SWは baras-app/ 配下だけをスコープに -->
+  <!-- Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       if (isSecure) navigator.serviceWorker.register('./sw.js', { scope: './' });
     }
-
   </script>
-<script src="./app.js?v=6"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistration().then(r => r?.update());
-  }
-</script>
 
+  <!-- App -->
+  <script src="./app.js?v=6"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(r => r?.update());
+    }
+  </script>
 
-
-
-<div id="install-banner" style="display:none; position:fixed; inset:auto 16px 16px 16px; padding:16px; border-radius:12px; background:#1f1335; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35); z-index:99999;">
-  <div id="install-msg" style="margin-bottom:10px; font-weight:700;">アプリをホーム画面に追加できます</div>
-  <div style="display:flex; gap:8px; justify-content:flex-end;">
-    <button id="install-cancel" style="padding:8px 12px; border-radius:8px; background:#444; color:#fff;">あとで</button>
-    <button id="install-cta" style="padding:8px 12px; border-radius:8px; background:#6c4bff; color:#fff; font-weight:700;">インストール</button>
+  <!-- Install banner (PWA) -->
+  <div id="install-banner" style="display:none; position:fixed; inset:auto 16px 16px 16px; padding:16px; border-radius:12px; background:#1f1335; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35); z-index:99999;">
+    <div id="install-msg" style="margin-bottom:10px; font-weight:700;">アプリをホーム画面に追加できます</div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button id="install-cancel" style="padding:8px 12px; border-radius:8px; background:#444; color:#fff;">あとで</button>
+      <button id="install-cta" style="padding:8px 12px; border-radius:8px; background:#6c4bff; color:#fff; font-weight:700;">インストール</button>
+    </div>
   </div>
-</div>
 
 </body>
 </html>
