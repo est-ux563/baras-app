@@ -25,20 +25,24 @@ function updateMeta(qIndex, total, correct, streak, best) {
 }
 
 /* ==== 中央フラッシュ（◎/✖） ==== */
-function showJudge(ok) {
-  let node = document.getElementById('judge');
-  if (!node) {
-    node = document.createElement('div');
-    node.id = 'judge';
-    document.body.appendChild(node);
-  }
-  node.className = ok ? 'ok' : 'ng';
-  node.textContent = ok ? '◎' : '✖';
+function showJudge(isCorrect) {
+  const judge = document.getElementById('judge');
+  if (!judge) return;
 
-  requestAnimationFrame(() => {
-    node.classList.add('show');
-    setTimeout(() => node.classList.remove('show'), 700);
-  });
+  judge.textContent = isCorrect ? '◎' : '✖';
+  judge.classList.remove('ok', 'ng', 'show');
+
+  // ここで一度レイアウトを確定させ、連続表示でもアニメを確実に再生
+  // （visibility/opacity を CSS 側で制御しているため、ここはクラスの付け外しだけ）
+  // 強制リフロー
+  void judge.offsetWidth;
+
+  judge.classList.add(isCorrect ? 'ok' : 'ng', 'show');
+
+  // フェードアウト
+  setTimeout(() => {
+    judge.classList.remove('show');
+  }, 800);
 }
 
 /* ==== Web Audio（ファイル不要の効果音） ==== */
@@ -112,7 +116,8 @@ function spawnParticles(rect) {
     setTimeout(() => p.remove(), 650);
   }
 }
-// パーティクルCSS（JS注入・一度だけ）
+
+// パーティクルCSS（JS注入は .p だけに限定。#judge や choice の見た目は CSS に委譲）
 (() => {
   if (document.getElementById('particles-style')) return;
   const style = document.createElement('style');
@@ -129,22 +134,6 @@ function spawnParticles(rect) {
     @keyframes rise{
       to{ transform: translate(var(--dx), var(--dy)) scale(.2); opacity:0 }
     }
-    #judge{
-      position: fixed; inset:0; margin:auto; width:160px; height:160px;
-      display:grid; place-items:center; font-size:110px; line-height:1;
-      border-radius:24px; pointer-events:none; transform:scale(.7);
-      opacity:0; transition: transform .12s ease, opacity .12s ease;
-      z-index: 9998;
-      backdrop-filter: blur(2px);
-    }
-    #judge.ok{ color:#22c55e; background:rgba(34,197,94,.12); }
-    #judge.ng{ color:#ef4444; background:rgba(239,68,68,.12); }
-    #judge.show{ opacity:1; transform:scale(1); }
-    .choice.correct{ outline:2px solid #22c55e; }
-    .choice.wrong{ outline:2px solid #ef4444; }
-    .choice.reveal{ box-shadow:0 0 0 3px rgba(34,197,94,.25) inset; }
-    .choice:disabled{ opacity:.9; cursor:not-allowed; }
-    .answer{ margin-top:.75rem; font-weight:600; color:#ef4444; }
   `;
   document.head.appendChild(style);
 })();
@@ -389,7 +378,7 @@ main().catch(e => {
 
   // iOSは beforeinstallprompt が来ない → 手順案内を表示
   if (isiOS && wantsInstall) {
-    msg.textContent = 'iPhone/iPadは共有ボタン → 「ホーム画面に追加」でインストールできます';
+    msg.textContent = 'iPhone/iPadは 共有ボタン → 「ホーム画面に追加」でインストールできます';
     btn.textContent = 'OK';
     btn.onclick = () => show(false);
     cancel.onclick = () => show(false);
@@ -403,6 +392,9 @@ main().catch(e => {
     deferredPrompt = e;
     if (wantsInstall) show(true); // クエリで来たら自動表示
   });
+
+  // インストール完了時は必ず閉じる
+  window.addEventListener('appinstalled', () => show(false));
 
   cancel.onclick = () => show(false);
 

@@ -5,22 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>バラシュナ暗記法</title>
 
-<!-- manifest / theme-color -->
-<link rel="manifest" href="./manifest.webmanifest?v=11">
-<meta name="theme-color" content="#1f1335">
+  <!-- manifest / theme-color -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#1f1335">
+<link rel="icon" href="./icons/icon-192.png" sizes="192x192">
 
-<!-- iOS (A2HS) -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png?v=11">
-<meta name="apple-mobile-web-app-title" content="バラシュナ暗記">
-<meta name="mobile-web-app-capable" content="yes">
-
+  <!-- iOS (A2HS) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="バラシュナ暗記">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png?v=11">
 
   <!-- CSS -->
-<link rel="stylesheet" href="./style.css?v=11">
+  <link rel="stylesheet" href="./style.css?v=11">
 </head>
 <body>
+
+  <!-- ○×をJSで描き替える場合に備え、空ノードを置いておくと安全 -->
+  <div id="judge" aria-hidden="true"></div>
 
   <div class="baras-wrap" id="baras">
     <header class="baras-head">
@@ -53,23 +56,18 @@
     <div class="grain"></div>
   </div>
 
-  <!-- Service Worker -->
+  <!-- App（deferで描画ブロック回避） -->
+  <script src="./app.js?v=12" defer></script>
+
+  <!-- Service Worker：登録は1回に統一。配下一式をスコープ化 -->
   <script>
     if ('serviceWorker' in navigator) {
       const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-      if (isSecure) navigator.serviceWorker.register('./sw.js', { scope: './' });
+      if (isSecure) {
+        navigator.serviceWorker.register('./sw.js', { scope: './' });
+      }
     }
   </script>
-
-  <!-- App -->
-  <script src="./app.js?v=6"></script>
-<script src="./app.js?v=11"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=11', { scope: './' });
-    navigator.serviceWorker.getRegistration().then(r => r?.update());
-  }
-</script>
 
   <!-- Install banner (PWA) -->
   <div id="install-banner" style="display:none; position:fixed; inset:auto 16px 16px 16px; padding:16px; border-radius:12px; background:#1f1335; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35); z-index:99999;">

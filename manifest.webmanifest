@@ -1,27 +1,15 @@
 {
+  "id": "./",
   "name": "バラシュナ暗記：1問1答",
   "short_name": "バラシュナ暗記",
-  "start_url": "/baras-app/index.html",
-  "scope": "/baras-app/",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
   "display": "standalone",
   "theme_color": "#1b1340",
   "background_color": "#1b1340",
   "icons": [
-    {
-      "src": "/baras-app/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/baras-app/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/baras-app/icons/maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
