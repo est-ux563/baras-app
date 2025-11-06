@@ -5,17 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>バラシュナ暗記法</title>
 
-<link rel="manifest" href="./manifest.webmanifest?v=8">
+<!-- manifest / theme-color -->
+<link rel="manifest" href="./manifest.webmanifest?v=11">
 <meta name="theme-color" content="#1f1335">
 
-<!-- iOS（ホーム画面追加のアイコン&名前） -->
+<!-- iOS (A2HS) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png?v=11">
 <meta name="apple-mobile-web-app-title" content="バラシュナ暗記">
-<link rel="apple-touch-icon" href="./icons/icon-180.png" sizes="180x180">
+<meta name="mobile-web-app-capable" content="yes">
+
 
   <!-- CSS -->
-  <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css?v=11">
 </head>
 <body>
 
@@ -60,11 +63,13 @@
 
   <!-- App -->
   <script src="./app.js?v=6"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then(r => r?.update());
-    }
-  </script>
+<script src="./app.js?v=11"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js?v=11', { scope: './' });
+    navigator.serviceWorker.getRegistration().then(r => r?.update());
+  }
+</script>
 
   <!-- Install banner (PWA) -->
   <div id="install-banner" style="display:none; position:fixed; inset:auto 16px 16px 16px; padding:16px; border-radius:12px; background:#1f1335; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35); z-index:99999;">
