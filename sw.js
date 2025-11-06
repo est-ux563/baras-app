@@ -1,5 +1,5 @@
 // sw.js
-const VERSION = 'baras-v3.1';
+const VERSION = 'baras-v6'; // 
 const ASSETS = [
   './',
   './index.html',

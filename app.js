@@ -47,9 +47,7 @@ function ensureAudio() {
   if (!audioCtx) {
     try {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch (_) {
-      // 生成不可環境は無音
-    }
+    } catch (_) { /* 無音でスルー */ }
   }
 }
 function playOK() {
@@ -154,6 +152,15 @@ function spawnParticles(rect) {
 /* ================= クイズ本体 ================= */
 const BEST_KEY = 'baras_best_streak_v1';
 
+// 共通シャッフル（インデックス配列や配列をシャッフル）
+function shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 async function main() {
   // 1) データ取得（キャッシュ無効）
   let data;
@@ -184,7 +191,7 @@ async function main() {
   }
 
   // 3) 状態
-  let order   = Array.from({ length: data.length }, (_, i) => i);
+  let order   = Array.from({ length: data.length }, (_, i) => i); // 問題の出題順
   let idx     = 0;
   let correct = 0;
   let streak  = 0;
@@ -192,14 +199,6 @@ async function main() {
   let answered = false;
 
   const current = () => data[order[idx]];
-
-  // ユーティリティ
-  function shuffleInPlace(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  }
 
   function render() {
     // クリア画面
@@ -222,12 +221,15 @@ async function main() {
     nextBtn.disabled = true;
     if (liveEl) liveEl.textContent = '';
 
-    // 選択肢はそのままの順。必要ならここでシャッフル可能
-    // const map = q.choices.map((c,i)=>({c,i})); shuffleInPlace(map) ... 等
+    // 質問テキスト
     qEl.textContent = q.q;
-    choicesEl.innerHTML = q.choices.map((c, i) => `
-      <button class="choice" data-idx="${i}" aria-label="選択肢 ${i+1}：${c}">
-        <span class="num">${i + 1}．</span> ${c}
+
+    // ★選択肢：インデックス配列を作り、シャッフルしてから描画
+    const choiceOrder = shuffleInPlace(q.choices.map((_, i) => i));
+
+    choicesEl.innerHTML = choiceOrder.map((origIndex, i) => `
+      <button class="choice" data-idx="${origIndex}" aria-label="選択肢 ${i+1}：${q.choices[origIndex]}">
+        <span class="num">${i + 1}．</span> ${q.choices[origIndex]}
       </button>
     `).join('');
 
@@ -244,7 +246,7 @@ async function main() {
     updateMeta(idx + 1, data.length, correct, streak, best);
   }
 
-  function revealAnswerPanel(q, pickedIdx, btnEl) {
+  function revealAnswerPanel(q, pickedIdx) {
     const ansBox = document.getElementById('answer');
     if (!ansBox) return;
     if (pickedIdx === q.a) {
@@ -281,7 +283,7 @@ async function main() {
 
     // スコア
     if (ok) {
-      correct++; streak++; 
+      correct++; streak++;
       if (streak > best) {
         best = streak;
         try { localStorage.setItem(BEST_KEY, String(best)); } catch(_) {}
@@ -295,7 +297,7 @@ async function main() {
       order.push(order[idx]); // 同じ問題の再出題をキューに追加
     }
 
-    revealAnswerPanel(q, pickIdx, btn);
+    revealAnswerPanel(q, pickIdx);
     updateMeta(idx + 1, data.length, correct, streak, best);
 
     // 次へボタン解放
@@ -306,34 +308,34 @@ async function main() {
   choicesEl.addEventListener('click', (e) => {
     const t = e.target.closest('.choice');
     if (!t) return;
-    const i = Number(t.dataset.idx);
-    if (!Number.isInteger(i)) return;
-    onPick(i, t);
+    const pick = Number(t.dataset.idx);
+    if (!Number.isInteger(pick)) return;
+    onPick(pick, t);
   });
 
-  // キーボード操作：1〜9で選択、Enter/Spaceで次へ
+  // キーボード操作：1〜9で「画面の並び順」から選択、Enter/Spaceで次へ
   window.addEventListener('keydown', (e) => {
     // 入力系要素フォーカス時は無効
     const tag = (document.activeElement && document.activeElement.tagName) || '';
     if (['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
 
-    // 数字キー（1-9）
+    // 数字キー（1-9）：表示順で選択
     if (/^[1-9]$/.test(e.key)) {
-      const n = Number(e.key) - 1;
-      const btn = choicesEl.querySelector(`.choice[data-idx="${n}"]`);
+      const n = Number(e.key) - 1; // 0-based
+      const buttons = Array.from(choicesEl.querySelectorAll('.choice'));
+      const btn = buttons[n];
       if (btn && !btn.disabled) {
         e.preventDefault();
-        onPick(n, btn);
+        const pick = Number(btn.dataset.idx); // 元のインデックス
+        onPick(pick, btn);
       }
       return;
     }
 
     // 次へ
-    if (e.key === 'Enter' || e.key === ' ') {
-      if (!nextBtn.disabled) {
-        e.preventDefault();
-        next();
-      }
+    if ((e.key === 'Enter' || e.key === ' ') && !nextBtn.disabled) {
+      e.preventDefault();
+      next();
     }
   });
 
@@ -343,12 +345,10 @@ async function main() {
   }
 
   function reset() {
-    // 出題順シャッフル（固定にしたいなら以下3行を削除）
     order = Array.from({ length: data.length }, (_, i) => i);
-    shuffleInPlace(order);
-
-    idx = 0; 
-    correct = 0; 
+    shuffleInPlace(order); // 出題順シャッフル
+    idx = 0;
+    correct = 0;
     streak = 0; // best は継続（localStorage管理）
     render();
   }
@@ -367,3 +367,53 @@ main().catch(e => {
   const app = document.getElementById('baras') || document.getElementById('app');
   if (app) app.innerHTML = `<p>読み込み失敗: ${e.message}</p>`;
 });
+
+/* ===== Install banner (PWA) ===== */
+(() => {
+  const params = new URLSearchParams(location.search);
+  const wantsInstall = params.get('install') === '1';
+  const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const banner = document.getElementById('install-banner');
+  const btn = document.getElementById('install-cta');
+  const cancel = document.getElementById('install-cancel');
+  const msg = document.getElementById('install-msg');
+  let deferredPrompt = null;
+
+  function show(on=true){ if(banner) banner.style.display = on ? '' : 'none'; }
+
+  if (!banner || !btn || !cancel || !msg) return;
+
+  // すでにインストール済みなら何もしない
+  if (isStandalone) return;
+
+  // iOSは beforeinstallprompt が来ない → 手順案内を表示
+  if (isiOS && wantsInstall) {
+    msg.textContent = 'iPhone/iPadは共有ボタン → 「ホーム画面に追加」でインストールできます';
+    btn.textContent = 'OK';
+    btn.onclick = () => show(false);
+    cancel.onclick = () => show(false);
+    show(true);
+    return;
+  }
+
+  // Android/Chrome 等：イベント受領後にバナー表示
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (wantsInstall) show(true); // クエリで来たら自動表示
+  });
+
+  cancel.onclick = () => show(false);
+
+  btn.onclick = async () => {
+    if (!deferredPrompt) { show(false); return; }
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice; // accepted / dismissed
+    deferredPrompt = null;
+    show(false);
+  };
+
+  // すでにイベント発火前に来ている場合の保険：数秒待っても来なければ閉じる
+  setTimeout(() => { if (wantsInstall && !deferredPrompt && !isiOS) show(false); }, 5000);
+})();
