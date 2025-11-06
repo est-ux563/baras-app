@@ -1,0 +1,195 @@
+/* ===== バラシュナ配色 ===== */
+:root{
+  --bg: #0e071a;           /* 漆黒紫 */
+  --bg2:#16102a;           /* すこし明るい紫 */
+  --panel:#1f1740;         /* カード面 */
+  --line:#3b2b6f;          /* 境界線 */
+  --txt:#EAE6FF;           /* 文字色 */
+  --sub:#bbaee6;           /* サブ文字 */
+  --gold:#e3c35b;          /* 金 */
+  --gold2:#b58b28;         /* 濃い金 */
+  --correct:#49e6a3;
+  --wrong:#ff557a;
+  --shadow: 0 10px 30px rgba(10,0,30,.45);
+}
+
+html,body{height:100%}
+body{
+  background: radial-gradient(1200px 700px at 70% -10%, #2a1a48 0%, var(--bg) 60%) fixed;
+  color: var(--txt);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  margin:0; padding:24px;
+}
+
+/* 背景のオーラ＆フィルムノイズ */
+.baras-bg .aura{
+  position:fixed; inset:-20vmax;
+  background:
+    radial-gradient(60vmax 35vmax at 85% -10%, rgba(227,195,91,.18), transparent 40%),
+    radial-gradient(50vmax 30vmax at 10% 110%, rgba(123,92,255,.18), transparent 50%);
+  filter: blur(16px);
+  pointer-events:none; z-index:0;
+}
+.baras-bg .grain{
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .2 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' /></svg>");
+  opacity:.15; mix-blend-mode:soft-light;
+}
+
+/* ===== ラッパー ===== */
+.baras-wrap{
+  position:relative; z-index:1;
+  max-width:840px; margin:0 auto;
+}
+
+/* ===== ヘッダー ===== */
+.baras-head{
+  display:flex; gap:16px; align-items:end; justify-content:space-between;
+  background: linear-gradient(180deg, #251a4a, #1b1340);
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow: var(--shadow);
+  padding:18px 22px;
+}
+.app-title{
+  margin:0; font-size: clamp(18px, 2.2vw, 24px);
+  letter-spacing:.5px;
+  background: linear-gradient(90deg, var(--gold), #fff7c9 60%, var(--gold));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow: 0 0 20px rgba(227,195,91,.15);
+}
+.meta{ color:var(--sub); font-size:12px; display:flex; gap:10px; margin-top:4px }
+
+.toggle{ color:var(--sub); font-size:13px; user-select:none }
+.toggle input{ accent-color: var(--gold) }
+
+/* ===== 進捗バー ===== */
+.progress{ height:6px; background:#120a25; border-radius:999px; margin:14px 6px }
+.progress .bar{
+  height:100%; width:0%;
+  background: linear-gradient(90deg, var(--gold2), var(--gold));
+  border-radius:999px; box-shadow: 0 0 12px rgba(227,195,91,.5) inset;
+  transition: width .35s ease;
+}
+
+/* ===== カード ===== */
+.card{
+  background: linear-gradient(180deg, var(--panel), #191238 80%);
+  border:1px solid var(--line);
+  border-radius:26px; padding:26px; margin-top:14px;
+  box-shadow: var(--shadow);
+}
+.question{
+  margin:6px 0 14px;
+  font-size: clamp(18px, 2.3vw, 22px);
+  line-height:1.6;
+  border-left:4px solid var(--gold);
+  padding-left:10px;
+  text-shadow: 0 0 24px rgba(123,92,255,.15);
+}
+
+/* 選択肢ボタン */
+.choices{ display:grid; gap:12px; margin:20px 0 10px }
+.choice{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:14px 16px; border-radius:14px;
+  border:1px solid #2c2254; background:#1a1236; color:var(--txt);
+  font-size:16px; cursor:pointer;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+  transition: transform .08s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+.choice:hover{ transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.35) }
+.choice:active{ transform: translateY(0) scale(.99) }
+
+/* 判定スタイル */
+.choice.correct{
+  border-color: #2c6e4d;
+  background: linear-gradient(180deg, #122a24, #10261f);
+  box-shadow: 0 0 0 1px #1f6d4c inset, 0 0 22px rgba(73,230,163,.35);
+  animation: glow-correct .5s ease;
+}
+.choice.wrong{
+  border-color: #61213a;
+  background: linear-gradient(180deg, #2a0f1a, #200b14);
+  box-shadow: 0 0 0 1px #6d1f3f inset, 0 0 22px rgba(255,85,122,.3);
+  animation: shake .35s ease;
+}
+
+@keyframes glow-correct{
+  from{ box-shadow: 0 0 0 0 rgba(73,230,163,.0) }
+  to  { box-shadow: 0 0 0 1px #1f6d4c inset, 0 0 22px rgba(73,230,163,.35) }
+}
+@keyframes shake{
+  10%,90%{transform: translateX(-1px)}
+  20%,80%{transform: translateX(2px)}
+  30%,50%,70%{transform: translateX(-4px)}
+  40%,60%{transform: translateX(4px)}
+}
+
+/* 次へ */
+.next{
+  margin-top:12px; width:100%;
+  background: linear-gradient(90deg, #6040cc, #7b5cff);
+  color:white; border:none; border-radius:12px; padding:12px 16px;
+  font-weight:700; letter-spacing:.2px; cursor:pointer; box-shadow: 0 10px 20px rgba(123,92,255,.35);
+  transition: filter .2s ease, transform .08s ease;
+}
+.next:disabled{ filter:grayscale(.7) brightness(.7); cursor:not-allowed; box-shadow:none }
+.next:not(:disabled):hover{ filter:brightness(1.1) }
+.next:not(:disabled):active{ transform: translateY(1px) }
+
+/* アクセシビリティ領域 */
+.sr{ position:absolute; left:-9999px }
+
+/* モバイル余白 */
+@media (max-width:560px){
+  body{ padding:14px }
+  .baras-head{ border-radius:18px }
+  .card{ border-radius:18px; padding:18px }
+}
+/* === 中央判定フラッシュ === */
+#judge{
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%) scale(.7);
+  font-size: clamp(6rem, 12vw, 18rem);
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 99999;
+  text-shadow: 0 0 24px rgba(255,255,255,.25);
+  transition: transform .18s ease, opacity .18s ease;
+   backdrop-filter: none;      /* ← 元は blur(2px) */
+}
+#judge.show{ opacity:1; transform: translate(-50%, -50%) scale(1); }
+#judge.ok { color:#57ff7a; }     /* 緑：正解 */
+#judge.ng { color:#ff5a5a; }     /* 赤：不正解 */
+
+/* 出現→フェードの軽いアニメ（任意） */
+@keyframes judge-pop {
+  0%   { transform: translate(-50%,-50%) scale(.6); opacity:0 }
+  60%  { transform: translate(-50%,-50%) scale(1.06); opacity:1 }
+  100% { transform: translate(-50%,-50%) scale(1);   opacity:1 }
+}
+#judge.show { animation: judge-pop .22s ease-out; }
+
+/* 正解の“自動ハイライト” */
+.choice.reveal {
+  box-shadow: 0 0 0 2px #27e38c inset, 0 0 22px #27e38c55;
+  position: relative;
+}
+
+/* 正解テキスト */
+.answer{
+  margin-top: 12px;
+  color: #e9ffe6;
+  font-weight: 600;
+  opacity: .9;
+}
+/* ───── #judgeの背景ぼかし＆半透明膜を完全に無効化 ───── */
+#judge, #judge.ok, #judge.ng {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
