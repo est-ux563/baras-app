@@ -180,7 +180,9 @@ async function main() {
   }
 
   // 3) 状態
-  let order   = Array.from({ length: data.length }, (_, i) => i); // 問題の出題順
+  let order = shuffleInPlace(
+  Array.from({ length: data.length }, (_, i) => i)
+).slice(0, 20);// 問題の出題順
   let idx     = 0;
   let correct = 0;
   let streak  = 0;
@@ -334,8 +336,10 @@ async function main() {
   }
 
   function reset() {
-    order = Array.from({ length: data.length }, (_, i) => i);
-    shuffleInPlace(order); // 出題順シャッフル
+   order = shuffleInPlace(
+  Array.from({ length: data.length }, (_, i) => i)
+).slice(0, 20);
+
     idx = 0;
     correct = 0;
     streak = 0; // best は継続（localStorage管理）
